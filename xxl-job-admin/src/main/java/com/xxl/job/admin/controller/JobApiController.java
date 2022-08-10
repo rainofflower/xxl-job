@@ -2,6 +2,11 @@ package com.xxl.job.admin.controller;
 
 import com.xxl.job.admin.controller.annotation.PermissionLimit;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
+import com.xxl.job.admin.core.model.XxlJobInfo;
+import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
+import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
+import com.xxl.job.admin.dao.XxlJobGroupDao;
+import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.AdminBiz;
 import com.xxl.job.core.biz.model.HandleCallbackParam;
 import com.xxl.job.core.biz.model.RegistryParam;
@@ -27,6 +32,12 @@ public class JobApiController {
 
     @Resource
     private AdminBiz adminBiz;
+
+    @Resource
+    private XxlJobGroupDao xxlJobGroupDao;
+
+    @Resource
+    private XxlJobService xxlJobService;
 
     /**
      * api
@@ -67,6 +78,57 @@ public class JobApiController {
             return new ReturnT<String>(ReturnT.FAIL_CODE, "invalid request, uri-mapping("+ uri +") not found.");
         }
 
+    }
+
+    @RequestMapping("/addJob")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> addJobInfo(@RequestBody XxlJobInfo jobInfo) {
+        return xxlJobService.add(jobInfo);
+    }
+
+    @RequestMapping("/updateJob")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> updateJob(@RequestBody XxlJobInfo jobInfo) {
+        return xxlJobService.update(jobInfo);
+    }
+
+    @RequestMapping("/removeJob")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> removeJob(@RequestBody XxlJobInfo jobInfo) {
+        return xxlJobService.remove(jobInfo.getId());
+    }
+
+    @RequestMapping("/pauseJob")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> pauseJob(@RequestBody XxlJobInfo jobInfo) {
+        return xxlJobService.stop(jobInfo.getId());
+    }
+
+    @RequestMapping("/startJob")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> startJob(@RequestBody XxlJobInfo jobInfo) {
+        return xxlJobService.start(jobInfo.getId());
+    }
+
+    @RequestMapping("/trigger")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> triggerJob(@RequestBody XxlJobInfo jobInfo) {
+        // force cover job param
+        if (jobInfo.getExecutorParam() == null) {
+            jobInfo.setExecutorParam("");
+        }
+
+        /**
+         * addressList 可扩展该参数
+         */
+        JobTriggerPoolHelper.trigger(jobInfo.getId(), TriggerTypeEnum.MANUAL, -1, null, jobInfo.getExecutorParam(), null);
+        return ReturnT.SUCCESS;
     }
 
 }
