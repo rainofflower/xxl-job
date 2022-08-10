@@ -2,6 +2,7 @@ package com.xxl.job.admin.controller;
 
 import com.xxl.job.admin.controller.annotation.PermissionLimit;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
+import com.xxl.job.admin.core.model.XxlJobGroup;
 import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
@@ -129,6 +130,17 @@ public class JobApiController {
          */
         JobTriggerPoolHelper.trigger(jobInfo.getId(), TriggerTypeEnum.MANUAL, -1, null, jobInfo.getExecutorParam(), null);
         return ReturnT.SUCCESS;
+    }
+
+    @RequestMapping("/getGroupId")
+    @ResponseBody
+    @PermissionLimit(limit = false)
+    public ReturnT<String> getGroupId(@RequestBody XxlJobGroup jobGroup) {
+        XxlJobGroup group = xxlJobGroupDao.findByName(jobGroup.getAppname());
+        if(group == null){
+            return new ReturnT<>();
+        }
+        return new ReturnT<>(String.valueOf(group.getId()));
     }
 
 }

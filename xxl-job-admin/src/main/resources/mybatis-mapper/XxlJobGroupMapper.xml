@@ -85,4 +85,10 @@
 		</trim>
 	</select>
 
+	<select id="findByName" parameterType="java.lang.String" resultMap="XxlJobGroup">
+		SELECT <include refid="Base_Column_List" />
+		FROM xxl_job_group AS t
+		WHERE t.app_name = #{appname}
+	</select>
+
 </mapper>
